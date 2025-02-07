@@ -1,9 +1,10 @@
+import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
-import { WagmiConfig, createConfig } from 'wagmi';
 import { RainbowKitProvider, getDefaultWallets, darkTheme } from '@rainbow-me/rainbowkit';
 import { sepolia } from 'wagmi/chains';
-import { publicProvider } from 'wagmi/providers/public';
+import { publicProvider } from '@wagmi/core/providers/public';
 import { createPublicClient, http } from 'viem';
+import { WagmiConfig, createConfig } from 'wagmi';
 
 // Définition du client public Viem
 const publicClient = createPublicClient({
@@ -11,15 +12,14 @@ const publicClient = createPublicClient({
   transport: http(),
 });
 
-// Configuration des wallets et du connecteur
+// Configuration de Wagmi
 const { connectors } = getDefaultWallets({
-  appName: 'Drainerweb',
+  appName: 'drainerweb',
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
   chains: [sepolia],
 });
 
-// Création de la configuration Wagmi
-const config = createConfig({
+const wagmiConfig = createConfig({
   autoConnect: true,
   connectors,
   publicClient,
@@ -27,7 +27,7 @@ const config = createConfig({
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <WagmiConfig config={config}>
+    <WagmiConfig config={wagmiConfig}>
       <RainbowKitProvider chains={[sepolia]} theme={darkTheme()}>
         <Component {...pageProps} />
       </RainbowKitProvider>
