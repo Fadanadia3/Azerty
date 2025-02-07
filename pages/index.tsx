@@ -52,4 +52,9 @@ export default function Home() {
       ) : (
         <>
           <p>Solde actuel : {balance} ETH</p>
-          <button onClick={handleTransfer}>Envoyer
+          <button onClick={handleTransfer}>Envoyer</button>
+        </>
+      )}
+    </div>
+  );
+}
