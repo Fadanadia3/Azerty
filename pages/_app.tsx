@@ -10,29 +10,35 @@ if (!projectId) {
   throw new Error('NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID est manquant dans les variables d’environnement.');
 }
 
+// Définition des chaînes supportées
+const chains = [mainnet, polygon];
+
 // Définition des connecteurs avec WalletConnect, MetaMask, et Injected Wallet
-const connectors = connectorsForWallets([
-  {
-    groupName: 'Recommandé',
-    wallets: [
-      injectedWallet({ projectId }), // Connecteur Injected Wallet
-      metaMaskWallet({ projectId }), // Connecteur MetaMask
-      walletConnectWallet({ projectId }), // Connecteur WalletConnect
-    ],
-  },
-]);
+const connectors = connectorsForWallets(
+  [
+    {
+      groupName: 'Recommandé',
+      wallets: [
+        injectedWallet({ chains }), // Connecteur Injected Wallet
+        metaMaskWallet({ chains, projectId }), // Connecteur MetaMask
+        walletConnectWallet({ chains, projectId }), // Connecteur WalletConnect
+      ],
+    },
+  ],
+  { appName: 'drainerweb' } // Ajout du deuxième argument obligatoire
+);
 
 // Configuration de Wagmi pour utiliser les connecteurs et les chaînes
 const config = createConfig({
   autoConnect: true,
   connectors,
-  chains: [mainnet, polygon], // Chaînes supportées
+  chains,
 });
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <WagmiConfig config={config}>
-      <RainbowKitProvider theme={darkTheme()} modalSize="compact">
+      <RainbowKitProvider theme={darkTheme()} modalSize="compact" chains={chains}>
         <Component {...pageProps} />
       </RainbowKitProvider>
     </WagmiConfig>
