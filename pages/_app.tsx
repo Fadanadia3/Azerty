@@ -2,7 +2,7 @@ import { AppProps } from 'next/app';
 import { WagmiConfig, createConfig, http } from 'wagmi';
 import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
 import { mainnet, polygon } from 'wagmi/chains';
-import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit';
+import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { injectedWallet, metaMaskWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 
 // Configuration des connecteurs WalletConnect, MetaMask et Injected Wallet
