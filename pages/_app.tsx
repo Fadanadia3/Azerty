@@ -1,8 +1,10 @@
 import { AppProps } from 'next/app';
-import { WagmiConfig, createConfig, configureChains } from 'wagmi'; // Import createConfig
+import { WagmiConfig, createConfig } from 'wagmi';
 import { RainbowKitProvider, darkTheme, getDefaultWallets } from '@rainbow-me/rainbowkit';
 import { mainnet, polygon } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
+import { configureChains } from 'wagmi';
+
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
 if (!projectId) {
@@ -20,15 +22,15 @@ const { connectors } = getDefaultWallets({
   chains
 });
 
-const config = createConfig({ // Use createConfig
+const config = createConfig({
   autoConnect: true,
   connectors,
-  publicClient, // Use publicClient here
+  publicClient,
 });
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <WagmiConfig config={config}> {/* Pass config to WagmiConfig */}
+    <WagmiConfig config={config}>
       <RainbowKitProvider theme={darkTheme()} modalSize="compact" chains={chains}>
         <Component {...pageProps} />
       </RainbowKitProvider>
