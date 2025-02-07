@@ -15,24 +15,18 @@ const connectors = connectorsForWallets([
   {
     groupName: 'Recommandé',
     wallets: [
-      injectedWallet({ projectId }),
-      metaMaskWallet({ projectId }),
-      walletConnectWallet({ projectId }),
+      injectedWallet({ projectId }), // Utilisation du connecteur injectedWallet
+      metaMaskWallet({ projectId }), // Utilisation du connecteur MetaMask
+      walletConnectWallet({ projectId }), // Utilisation du connecteur WalletConnect
     ],
   },
-], {
-  appName: 'Drainer 2',
-  projectId,
-});
+]);
 
 // Configuration de Wagmi avec des transports valides
 const config = createConfig({
   autoConnect: true,
   connectors,
-  transports: {
-    [mainnet.id]: { http: mainnet.rpcUrls.default.http[0] },
-    [polygon.id]: { http: polygon.rpcUrls.default.http[0] },
-  },
+  chains: [mainnet, polygon], // Définition des chaînes supportées
 });
 
 function MyApp({ Component, pageProps }: AppProps) {
