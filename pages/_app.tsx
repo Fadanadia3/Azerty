@@ -1,6 +1,5 @@
 import { AppProps } from 'next/app';
-import { useEffect } from 'react';
-import { createClient, WagmiConfig, configureChains, mainnet, polygon, chain } from 'wagmi';
+import { WagmiConfig, createClient, configureChains, mainnet, polygon } from 'wagmi';
 import { RainbowKitProvider, connectorsForWallets, darkTheme } from '@rainbow-me/rainbowkit';
 import { InjectedConnector } from 'wagmi/connectors/injected';
 import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
