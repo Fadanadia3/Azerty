@@ -1,31 +1,40 @@
 import { AppProps } from 'next/app';
 import { WagmiConfig, createConfig, http } from 'wagmi';
-import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
+import { RainbowKitProvider, darkTheme, connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { mainnet, polygon } from 'wagmi/chains';
-import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { injectedWallet, metaMaskWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 
+// Récupération du projectId avec une vérification
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
+if (!projectId) {
+  throw new Error('NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID est manquant dans les variables d’environnement.');
+}
+
 // Configuration des connecteurs WalletConnect, MetaMask et Injected Wallet
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '';
-
-const connectors = connectorsForWallets([
+const connectors = connectorsForWallets(
+  [
+    {
+      groupName: 'Recommandé',
+      wallets: [
+        injectedWallet({ projectId }),
+        metaMaskWallet({ projectId }),
+        walletConnectWallet({ projectId }),
+      ],
+    },
+  ],
   {
-    groupName: 'Recommandé',
-    wallets: [
-      injectedWallet({ projectId }),
-      metaMaskWallet({ projectId }),
-      walletConnectWallet({ projectId }),
-    ],
-  },
-]);
+    appName: 'Drainer 2',
+    projectId,
+  }
+);
 
-// Configuration de Wagmi
+// Configuration de Wagmi avec des transports valides
 const config = createConfig({
   autoConnect: true,
   connectors,
   transports: {
-    [mainnet.id]: http(),
-    [polygon.id]: http(),
+    [mainnet.id]: http(mainnet.rpcUrls.default.http[0]), // Correction ici
+    [polygon.id]: http(polygon.rpcUrls.default.http[0]), // Correction ici
   },
 });
 
