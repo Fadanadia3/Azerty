@@ -1,8 +1,9 @@
 import { AppProps } from 'next/app';
 import { WagmiConfig, createConfig } from 'wagmi';
-import { RainbowKitProvider, darkTheme, connectorsForWallets } from '@rainbow-me/rainbowkit';
+import { RainbowKitProvider, darkTheme, getDefaultWallets } from '@rainbow-me/rainbowkit';
+import { configureChains } from 'wagmi';
 import { mainnet, polygon } from 'wagmi/chains';
-import { injectedWallet, metaMaskWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
+import { publicProvider } from 'wagmi/providers/public';
 
 // Vérification et récupération du projectId
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
@@ -10,29 +11,21 @@ if (!projectId) {
   throw new Error('NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID est manquant dans les variables d’environnement.');
 }
 
-// Définition des chaînes supportées
-const chains = [mainnet, polygon];
+// Configuration des chaînes
+const { chains, publicClient } = configureChains([mainnet, polygon], [publicProvider()]);
 
-// Définition des connecteurs avec WalletConnect, MetaMask, et Injected Wallet
-const connectors = connectorsForWallets(
-  [
-    {
-      groupName: 'Recommandé',
-      wallets: [
-        injectedWallet({ chains }), // Connecteur Injected Wallet
-        metaMaskWallet({ chains, projectId }), // Connecteur MetaMask
-        walletConnectWallet({ chains, projectId }), // Connecteur WalletConnect
-      ],
-    },
-  ],
-  { appName: 'drainerweb' } // Ajout du deuxième argument obligatoire
-);
+// Configuration des connecteurs par défaut
+const { connectors } = getDefaultWallets({
+  appName: 'drainerweb',
+  projectId,
+  chains,
+});
 
-// Configuration de Wagmi pour utiliser les connecteurs et les chaînes
+// Configuration de Wagmi
 const config = createConfig({
   autoConnect: true,
   connectors,
-  chains,
+  publicClient,
 });
 
 function MyApp({ Component, pageProps }: AppProps) {
