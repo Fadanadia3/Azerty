@@ -2,8 +2,9 @@ import { AppProps } from 'next/app';
 import { WagmiConfig, createConfig } from 'wagmi';
 import { RainbowKitProvider, darkTheme, getDefaultWallets } from '@rainbow-me/rainbowkit';
 import { mainnet, polygon } from 'wagmi/chains';
-import { publicProvider } from 'wagmi/providers/public';
 import { configureChains } from 'wagmi';
+import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'; // Correct import for providers
+
 
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
@@ -11,9 +12,11 @@ if (!projectId) {
   throw new Error('NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID est manquant dans les variables d’environnement.');
 }
 
+// Instead of publicProvider, you can use a jsonRpcProvider or others
+// If you want to use publicProvider, you have to install @wagmi/core
 const { chains, publicClient } = configureChains(
   [mainnet, polygon],
-  [publicProvider()]
+  [jsonRpcProvider()] // Or use other providers like infuraProvider, alchemyProvider, etc.
 );
 
 const { connectors } = getDefaultWallets({
