@@ -1,7 +1,8 @@
 import { AppProps } from 'next/app';
-import { WagmiConfig, createConfig, http } from 'wagmi';
+import { WagmiConfig, createClient, configureChains } from 'wagmi';
 import { RainbowKitProvider, darkTheme, getDefaultWallets } from '@rainbow-me/rainbowkit';
 import { mainnet, polygon } from 'wagmi/chains';
+import { publicProvider } from 'wagmi/providers/public';
 
 // Vérification et récupération du projectId
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
@@ -9,8 +10,8 @@ if (!projectId) {
   throw new Error('NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID est manquant dans les variables d’environnement.');
 }
 
-// Définition des chaînes
-const chains = [mainnet, polygon];
+// Configuration des chaînes avec un fournisseur public
+const { chains, provider } = configureChains([mainnet, polygon], [publicProvider()]);
 
 // Configuration des connecteurs par défaut
 const { connectors } = getDefaultWallets({
@@ -20,18 +21,15 @@ const { connectors } = getDefaultWallets({
 });
 
 // Création de la configuration Wagmi
-const config = createConfig({
+const client = createClient({
   autoConnect: true,
   connectors,
-  transports: {
-    [mainnet.id]: http(),
-    [polygon.id]: http(),
-  },
+  provider,
 });
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <WagmiConfig config={config}>
+    <WagmiConfig client={client}>
       <RainbowKitProvider theme={darkTheme()} modalSize="compact" chains={chains}>
         <Component {...pageProps} />
       </RainbowKitProvider>
