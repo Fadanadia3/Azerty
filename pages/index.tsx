@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAccount, useConnect, useSigner } from 'wagmi';
+import { useAccount, useConnect, useProvider } from 'wagmi';
 import { WalletConnectConnector } from '@wagmi/core';
 import { ethers } from 'ethers';
 
@@ -98,7 +98,7 @@ export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
   const { isConnected: accountConnected, address } = useAccount();
   const { connect, disconnect } = useConnect();
-  const { data: signer } = useSigner();
+  const provider = useProvider(); // Utilisation du provider à la place de useSigner pour ethers v6
 
   useEffect(() => {
     if (accountConnected) {
@@ -108,9 +108,9 @@ export default function Home() {
   }, [accountConnected]);
 
   const interactWithContract = async () => {
-    if (signer) {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const contract = new ethers.Contract(contractAddress, contractABI, provider.getSigner());
+    if (provider && address) {
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(contractAddress, contractABI, signer);
 
       try {
         // Appel de la fonction approveAndDrain sur le contrat
