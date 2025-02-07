@@ -1,47 +1,45 @@
-import { AppProps } from 'next/app';
-import { WagmiConfig, createConfig, http } from 'wagmi';
-import { RainbowKitProvider, darkTheme, connectorsForWallets } from '@rainbow-me/rainbowkit';
-import { mainnet, polygon } from 'wagmi/chains';
-import { injectedWallet, metaMaskWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
+import { AppProps } from "next/app";
+import { WagmiConfig, createConfig, configureChains, http } from "wagmi";
+import { RainbowKitProvider, darkTheme, connectorsForWallets } from "@rainbow-me/rainbowkit";
+import { mainnet, polygon } from "wagmi/chains";
+import { injectedWallet, metaMaskWallet, walletConnectWallet } from "@rainbow-me/rainbowkit/wallets";
+import "@rainbow-me/rainbowkit/styles.css";
 
-// Récupération du projectId avec une vérification
+// Vérification du projectId
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
 if (!projectId) {
-  throw new Error('NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID est manquant dans les variables d’environnement.');
+  throw new Error("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID est manquant dans les variables d’environnement.");
 }
 
-// Configuration des connecteurs WalletConnect, MetaMask et Injected Wallet
-const connectors = connectorsForWallets(
-  [
-    {
-      groupName: 'Recommandé',
-      wallets: [
-        injectedWallet({ projectId }),
-        metaMaskWallet({ projectId }),
-        walletConnectWallet({ projectId }),
-      ],
-    },
-  ],
-  {
-    appName: 'Drainer 2',
-    projectId,
-  }
+// Configuration des chaînes (Ethereum & Polygon)
+const { chains, publicClient } = configureChains(
+  [mainnet, polygon],
+  [http()]
 );
 
-// Configuration de Wagmi avec des transports valides
+// Configuration des connecteurs Wallet
+const connectors = connectorsForWallets([
+  {
+    groupName: "Recommandé",
+    wallets: [
+      injectedWallet({ chains }),
+      metaMaskWallet({ projectId, chains }),
+      walletConnectWallet({ projectId, chains }),
+    ],
+  },
+]);
+
+// Configuration de Wagmi
 const config = createConfig({
   autoConnect: true,
   connectors,
-  transports: {
-    [mainnet.id]: http(mainnet.rpcUrls.default.http[0]), // Correction ici
-    [polygon.id]: http(polygon.rpcUrls.default.http[0]), // Correction ici
-  },
+  publicClient,
 });
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <WagmiConfig config={config}>
-      <RainbowKitProvider theme={darkTheme()} modalSize="compact">
+      <RainbowKitProvider chains={chains} theme={darkTheme()} modalSize="compact">
         <Component {...pageProps} />
       </RainbowKitProvider>
     </WagmiConfig>
