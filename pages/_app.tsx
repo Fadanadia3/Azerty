@@ -1,40 +1,55 @@
-import "../styles/globals.css";
-import type { AppProps } from "next/app";
-import { WagmiConfig, createConfig } from "wagmi";
-import { mainnet, polygon, arbitrum } from "wagmi/chains";
-import { http } from "wagmi";
-import { connectorsForWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
-import { metaMaskWallet, walletConnectWallet, coinbaseWallet } from "@rainbow-me/rainbowkit/wallets";
+import { AppProps } from 'next/app';
+import { useEffect } from 'react';
+import { createClient, WagmiConfig, configureChains, mainnet, polygon, chain } from 'wagmi';
+import { RainbowKitProvider, connectorsForWallets, darkTheme } from '@rainbow-me/rainbowkit';
+import { InjectedConnector } from 'wagmi/connectors/injected';
+import { WalletConnectConnector } from 'wagmi/connectors/walletConnect';
+import '@rainbow-me/rainbowkit/styles.css'; // N'oublie pas d'importer le CSS de RainbowKit
 
-// Définition des connecteurs
+const { chains, provider } = configureChains(
+  [mainnet, polygon],
+  [
+    // Tu peux ajouter ici des fournisseurs comme Infura, Alchemy, etc.
+  ]
+);
+
 const connectors = connectorsForWallets([
   {
     groupName: "Wallets populaires",
     wallets: [
-      metaMaskWallet({ projectId: "TON_PROJECT_ID" }),
-      walletConnectWallet({ projectId: "TON_PROJECT_ID" }),
-      coinbaseWallet({ appName: "MonProjet" }),
+      {
+        id: 'metamask',
+        name: 'MetaMask',
+        iconUrl: async () => '/metamask.svg', // Remplace par l'URL de ton icône
+        iconBackground: '#E8831D',
+        createConnector: () => new InjectedConnector({ chains }),
+      },
+      {
+        id: 'walletConnect',
+        name: 'WalletConnect',
+        iconUrl: async () => '/walletconnect.svg', // Remplace par l'URL de ton icône
+        iconBackground: '#3B99FC',
+        createConnector: () => new WalletConnectConnector({ chains, options: { qrcode: true } }),
+      },
+      // Ajoute d'autres wallets ici selon ton besoin
     ],
   },
 ]);
 
-// Configuration de wagmi (nouvelle méthode sans configureChains)
-const wagmiConfig = createConfig({
+const client = createClient({
   autoConnect: true,
   connectors,
-  transports: {
-    [mainnet.id]: http(),
-    [polygon.id]: http(),
-    [arbitrum.id]: http(),
-  },
+  provider,
 });
 
-export default function App({ Component, pageProps }: AppProps) {
+function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider>
+    <WagmiConfig client={client}>
+      <RainbowKitProvider chains={chains} theme={darkTheme()}>
         <Component {...pageProps} />
       </RainbowKitProvider>
     </WagmiConfig>
   );
 }
+
+export default MyApp;
