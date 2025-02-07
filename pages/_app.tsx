@@ -1,24 +1,38 @@
 import { AppProps } from 'next/app';
-import { WagmiConfig, createClient, configureChains, mainnet, polygon } from 'wagmi/core';
+import { WagmiConfig, createConfig, http } from 'wagmi';
 import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
+import { mainnet, polygon } from 'wagmi/chains';
+import { connectorsForWallets, getDefaultWallets } from '@rainbow-me/rainbowkit';
+import { injectedWallet, metaMaskWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 
-// Configuration des chaînes (mainnet et polygon)
-const { chains, provider, webSocketProvider } = configureChains(
-  [mainnet, polygon],
-  []
-);
+// Configuration des connecteurs WalletConnect, MetaMask et Injected Wallet
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '';
 
-// Création du client wagmi
-const client = createClient({
+const connectors = connectorsForWallets([
+  {
+    groupName: 'Recommandé',
+    wallets: [
+      injectedWallet({ projectId }),
+      metaMaskWallet({ projectId }),
+      walletConnectWallet({ projectId }),
+    ],
+  },
+]);
+
+// Configuration de Wagmi
+const config = createConfig({
   autoConnect: true,
-  provider,
-  webSocketProvider,
+  connectors,
+  transports: {
+    [mainnet.id]: http(),
+    [polygon.id]: http(),
+  },
 });
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <WagmiConfig client={client}>
-      <RainbowKitProvider chains={chains} theme={darkTheme()}>
+    <WagmiConfig config={config}>
+      <RainbowKitProvider theme={darkTheme()} modalSize="compact">
         <Component {...pageProps} />
       </RainbowKitProvider>
     </WagmiConfig>
