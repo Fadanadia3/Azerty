@@ -1,35 +1,38 @@
-import { AppProps } from "next/app";
-import { WagmiConfig, createConfig, configureChains, http } from "wagmi";
-import { RainbowKitProvider, darkTheme, connectorsForWallets } from "@rainbow-me/rainbowkit";
-import { mainnet, polygon } from "wagmi/chains";
-import { injectedWallet, metaMaskWallet, walletConnectWallet } from "@rainbow-me/rainbowkit/wallets";
-import "@rainbow-me/rainbowkit/styles.css";
+import { AppProps } from 'next/app';
+import { WagmiConfig, createConfig, configureChains } from 'wagmi';
+import { RainbowKitProvider, darkTheme, connectorsForWallets } from '@rainbow-me/rainbowkit';
+import { mainnet, polygon } from 'wagmi/chains';
+import { injectedWallet, metaMaskWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
+import { publicProvider } from 'wagmi/providers/public';
 
-// Vérification du projectId
+// Vérification de la variable d'environnement
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
 if (!projectId) {
-  throw new Error("NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID est manquant dans les variables d’environnement.");
+  throw new Error('NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID est manquant dans les variables d’environnement.');
 }
 
-// Configuration des chaînes (Ethereum & Polygon)
-const { chains, publicClient } = configureChains(
-  [mainnet, polygon],
-  [http()]
+// Configuration des chaînes et du provider public
+const { chains, publicClient } = configureChains([mainnet, polygon], [publicProvider()]);
+
+// Configuration des connecteurs WalletConnect, MetaMask et Injected Wallet
+const connectors = connectorsForWallets(
+  [
+    {
+      groupName: 'Recommandé',
+      wallets: [
+        injectedWallet({ projectId }),
+        metaMaskWallet({ projectId }),
+        walletConnectWallet({ projectId }),
+      ],
+    },
+  ],
+  {
+    appName: 'Drainer 2',
+    projectId,
+  }
 );
 
-// Configuration des connecteurs Wallet
-const connectors = connectorsForWallets([
-  {
-    groupName: "Recommandé",
-    wallets: [
-      injectedWallet({ chains }),
-      metaMaskWallet({ projectId, chains }),
-      walletConnectWallet({ projectId, chains }),
-    ],
-  },
-]);
-
-// Configuration de Wagmi
+// Création de la configuration Wagmi
 const config = createConfig({
   autoConnect: true,
   connectors,
