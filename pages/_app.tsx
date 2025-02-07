@@ -1,38 +1,40 @@
-import { WagmiConfig, createConfig, configureChains } from "wagmi";
-import { publicProvider } from "wagmi/providers/public";
-import { mainnet } from "wagmi/chains";
+import "../styles/globals.css";
+import type { AppProps } from "next/app";
+import { WagmiConfig, createConfig } from "wagmi";
+import { mainnet, polygon, arbitrum } from "wagmi/chains";
+import { http } from "wagmi";
 import { connectorsForWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { metaMaskWallet, walletConnectWallet, coinbaseWallet } from "@rainbow-me/rainbowkit/wallets";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import "@rainbow-me/rainbowkit/styles.css";
 
-const { chains, publicClient } = configureChains([mainnet], [publicProvider()]);
-
+// Définition des connecteurs
 const connectors = connectorsForWallets([
   {
-    groupName: "Recommended",
-    wallets: [metaMaskWallet, walletConnectWallet, coinbaseWallet],
+    groupName: "Wallets populaires",
+    wallets: [
+      metaMaskWallet({ projectId: "TON_PROJECT_ID" }),
+      walletConnectWallet({ projectId: "TON_PROJECT_ID" }),
+      coinbaseWallet({ appName: "MonProjet" }),
+    ],
   },
 ]);
 
+// Configuration de wagmi (nouvelle méthode sans configureChains)
 const wagmiConfig = createConfig({
   autoConnect: true,
   connectors,
-  publicClient,
+  transports: {
+    [mainnet.id]: http(),
+    [polygon.id]: http(),
+    [arbitrum.id]: http(),
+  },
 });
 
-const queryClient = new QueryClient();
-
-function MyApp({ Component, pageProps }) {
+export default function App({ Component, pageProps }: AppProps) {
   return (
     <WagmiConfig config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider chains={chains}>
-          <Component {...pageProps} />
-        </RainbowKitProvider>
-      </QueryClientProvider>
+      <RainbowKitProvider>
+        <Component {...pageProps} />
+      </RainbowKitProvider>
     </WagmiConfig>
   );
 }
-
-export default MyApp;
